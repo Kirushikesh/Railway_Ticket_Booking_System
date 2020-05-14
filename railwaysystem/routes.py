@@ -67,7 +67,8 @@ def register():
     form=RegistrationForm()
     if form.validate_on_submit():
         hashed_password=bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        fm.add_user(form.username.data,form.email.data,hashed_password)
+        fm.add_user(form.username.data,form.email.data,hashed_password,form.age.data,
+                        form.gender.data,form.city.data,form.state.data)
         mysql.connection.commit()
         flash(f'Your Account has been created!You are now able to log in','success')
         return redirect(url_for('login'))

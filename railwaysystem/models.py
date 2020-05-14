@@ -121,6 +121,16 @@ def search_station(station_name):
     
     return information
 
-def add_user(name,email,password):
+def add_user(name,email,password,age,gender,city,state):
     cur=mysql.connection.cursor()
-    cur.execute("""insert into users(username,email,password) values(%s,%s,%s)""",(name,email,password,))
+    cur.execute("""insert into user(user_name,email_id,password,age,gender,city,state) values(%s,%s,%s,%s,%s,%s,%s)""",(name,email,password,age,gender,city,state,))
+
+def username_exist(uname):
+    cur=mysql.connection.cursor()
+    cur.execute("select * from user WHERE user_name = %s ",(uname,))
+    return cur.fetchone()
+
+def email_exist(mail):
+    cur=mysql.connection.cursor()
+    cur.execute("""select * from user where email_id = %s """,(mail,))
+    return cur.fetchone()

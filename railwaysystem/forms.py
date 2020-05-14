@@ -1,17 +1,17 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField,PasswordField,SubmitField,BooleanField,DateField,IntegerField
+from wtforms import StringField,PasswordField,SubmitField,BooleanField,DateField,IntegerField,RadioField
 from wtforms.validators import DataRequired,Length,Email,EqualTo,ValidationError,Length
 from datetime import datetime
-#from flaskblog.models import User
+from railwaysystem.models import User
 import railwaysystem.models as fm
-#from flask_login import current_user
+from flask_login import current_user
 class SearchTrains(FlaskForm):
     fromloc=StringField('From',validators=[DataRequired()])
     toloc=StringField('To',validators=[DataRequired()])
     Date=DateField('Date',format='%Y-%m-%d',
                         validators = [DataRequired('enter the date in the format yyyy-mm-dd')])
     submit=SubmitField('Search')
-
+ 
 class RunningStatus(FlaskForm):
     trainname_trainno=StringField('Enter Train Name/Train No',validators=[DataRequired()])
     submit=SubmitField('Search')
@@ -34,6 +34,10 @@ class RegistrationForm(FlaskForm):
     email=StringField('Email',validators=[DataRequired(),Email()])
     password=PasswordField('Password',validators=[DataRequired()])
     confirm_password=PasswordField('confirm_Password',validators=[DataRequired(),EqualTo('password')])
+    gender=RadioField('Gender',choices = [(1,'Male'), (2,'Female')],default=1)
+    age=IntegerField('Age',validators=[DataRequired()])
+    city=StringField('City',validators=[DataRequired()])
+    state=StringField('State',validators=[DataRequired()])
     submit=SubmitField('Sign Up')
 
     def validate_username(self,username):

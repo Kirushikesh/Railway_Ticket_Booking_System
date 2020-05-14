@@ -4,7 +4,8 @@
         <form method="POST" action="">
             {{ form.hidden_tag() }}
             <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Search Trains</legend>
+                <legend>Search Trains</legend>
+                <small class="border-bottom mb-10">Know current status of your Train Ticket and chances of W/L confirmation</small>
                 <div class="form-group">
                     {{ form.pnr_no.label(class="form-control-label") }}
                     {% if form.pnr_no.errors %}

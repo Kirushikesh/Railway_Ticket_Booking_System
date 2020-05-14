@@ -4,9 +4,9 @@
         <form method="POST" action="">
             {{ form.hidden_tag() }}
             <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Search by train name and number</legend>
+                <legend >Search by train name and number</legend>
+                <p class="border-bottom mb-4">Get Running Status</p>
                 <div class="form-group">
-                    <p>Get Running Status</p>
                     {{ form.trainname_trainno.label(class="form-control-label") }}
                     {% if form.trainname_trainno.errors %}
                         {{ form.trainname_trainno(class="form-control form-control-lg is-invalid") }}

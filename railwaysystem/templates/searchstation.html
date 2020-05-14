@@ -4,7 +4,8 @@
         <form method="POST" action="">
             {{ form.hidden_tag() }}
             <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Search Trains</legend>
+                <legend >Search Trains</legend>
+                <small class="border-bottom mb-4">Get list of all trains passing from a station. Check Station’s rating on Cleanliness, Safety and food.</small>
                 <div class="form-group">
                     {{ form.station.label(class="form-control-label") }}
                     {% if form.station.errors %}

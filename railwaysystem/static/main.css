@@ -25,13 +25,24 @@ body {
   }
   
   .content-section {
+    width: 700px;
     background: #ffffff;
     padding: 10px 20px;
     border: 1px solid #dddddd;
     border-radius: 3px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
   
+  .c-section {
+    width: 900px;
+    background: #ffffff;
+    padding: 10px 20px;
+    border: 1px solid #dddddd;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    margin-left: 50px;
+  }
+
   .article-title {
     color: #444444;
   }
@@ -120,4 +131,51 @@ body {
   
   .account-heading {
     font-size: 2.5rem;
+  }
+
+  table {
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  table td,th {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-decoration: none;
+  }
+  
+  table tr:nth-child(even){background-color: #f2f2f2;}
+  
+  table tr:hover {background-color: #ddd;}
+  
+  table th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: center;
+    background-color: rgba(21, 22, 17, 0.959);
+    color: white;
+  }
+
+  .train{
+    background: #ffffff;
+    width: 900px;
+    height: 150px;
+    border: 2px solid #dddddd;
+    border-radius: 3px;
+    margin-bottom: 20px;
+  }
+
+  a.train-no{
+    color: #040607;
+    margin-top: 10px;
+    margin-left: 20px;
+    text-decoration: none;
+  }
+
+  .train-name{
+    color: #040607;
+    margin-left: 30px;
+    margin-top: 20px;
+    text-transform: uppercase; 
   }

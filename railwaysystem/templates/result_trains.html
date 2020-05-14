@@ -1,13 +1,10 @@
 {% extends "layout.html" %}
 {% block content %}
     {% for post in form %}
-        <article class="media content-section" >
+        <div class="train" >
             <div class="media-body">
-                <div class="article-metadata">
-                    <h2><a class="mr-2" href="#">{{ post['train_no'] }}</a></h2>
-                    <small class="text-muted">{{ post['train_name'] }}</small>
-                    <small>{{ post['train_type'] }}</small>
-                </div>
+                <h5 class="mt-3"><a class="train-no" href="#">{{ post['train_no'] }}</a><span class="train-name">{{ post['train_name'] }}</span></h5>
+                <small>{{ post['train_type'] }}</small>
                 <h2>{{ post['source_id'] }}</h2>
                 <p>{{ post['source_time'] }}</p>
                 <h2>{{ post['destination_id'] }}</h2>

@@ -1,0 +1,13 @@
+select * from train where train_no in 
+	(select train_no from train_days where 
+		(available_days like '%1%' and train_no in 
+			(select source.train_no from route_has_station as source JOIN route_has_station as destination on source.train_no=destination.train_no where 
+				(source.station_id=113 and destination.station_id=115 and source.stop_no < destination.stop_no))))
+
+select arrival_time from route where train_no=1 and stop_no = (select stop_no from route_has_station where train_no=1 and station_id=113)
+
+
+
+select destination.source_distance,source.source_distance from route as source join route as destination on source.train_no=destination.train_no and source.stop_no=destination.stop_no where (source.stop_no=(select stop_no from route_has_station where train_no=1 and station_id=111) and destination.stop_no=(select stop_no from route_has_station where train_no=1 and station_id=115))
+
+select destination.source_distance-source.source_distance as distance from route as source join route as destination on source.train_no=destination.train_no where (source.stop_no=(select stop_no from route_has_station where train_no=1 and station_id=111) and destination.stop_no=(select stop_no from route_has_station where train_no=1 and station_id=115) and source.train_no=1)

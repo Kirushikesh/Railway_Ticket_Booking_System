@@ -34,12 +34,11 @@ class RegistrationForm(FlaskForm):
     email=StringField('Email',validators=[DataRequired(),Email()])
     password=PasswordField('Password',validators=[DataRequired()])
     confirm_password=PasswordField('confirm_Password',validators=[DataRequired(),EqualTo('password')])
-    gender=RadioField('Gender',choices = [(1,'Male'), (2,'Female')],default=1)
+    gender=RadioField('Gender',choices = [('M','Male'), ('F','Female')],default='M')
     age=IntegerField('Age',validators=[DataRequired()])
     city=StringField('City',validators=[DataRequired()])
     state=StringField('State',validators=[DataRequired()])
     submit=SubmitField('Sign Up')
-
     def validate_username(self,username):
         user=fm.username_exist(username.data)
         if user:
@@ -49,7 +48,6 @@ class RegistrationForm(FlaskForm):
         user=fm.email_exist(email.data)
         if user:
             raise ValidationError('That Email is taken. Please choose an another ')
-
 class LoginForm(FlaskForm):
     email=StringField('Email',validators=[DataRequired(),Email()])
     password=PasswordField('Password',validators=[DataRequired()])

@@ -5,18 +5,23 @@ from flask_login import UserMixin
 @login_manager.user_loader
 def load_user(user_id):
     cur=mysql.connection.cursor()
-    cur.execute("select * from users WHERE id = %s ",(int(user_id),))
+    cur.execute("select * from user WHERE email_id = %s ",(user_id,))
     Us=User(cur.fetchone())
     return Us
 
 class User(UserMixin):
     def __init__(self,dictionary):
-        self.username=dictionary['username']
-        self.email=dictionary['email']
+        self.email_id=dictionary['email_id']
+        self.user_name=dictionary['user_name']
         self.password=dictionary['password']
-        self.image_file=dictionary['image_file']
-        self.id=dictionary['id']
+        self.gender=dictionary['gender']
+        self.age=dictionary['age']
+        self.city=dictionary['city']
+        self.state=dictionary['state']
     
+    def get_id(self):
+        return self.email_id
+
     def update_record(self,name,mail):
         self.username=name
         self.email=mail

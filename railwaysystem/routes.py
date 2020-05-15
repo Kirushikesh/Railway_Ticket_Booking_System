@@ -14,7 +14,6 @@ def home():
 def searchtrain():
     form=SearchTrains()
     if form.validate_on_submit():
-        flash(f'Valid thing','success')
         output=fm.return_all_trains(form.fromloc.data,form.toloc.data,form.Date.data)
         return render_template('result_trains.html',form=output)
     return render_template('searchtrain.html',title='About',form=form)

@@ -1,3 +1,7 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   background: #fafafa;
   color: #333333;
@@ -84,6 +88,7 @@ a.article-title:hover {
   width: 900px;
   height: 150px;
   border: 2px solid #dddddd;
+  margin-top: 30px;
   border-radius: 3px;
   margin-bottom: 20px;
 }
@@ -101,6 +106,26 @@ a.train-no{
   margin-top: 20px;
   text-transform: uppercase; 
 }
+
+.clearfix::after{
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.train-time{
+  float: left;
+  width: 40%;
+  height: 80px;
+  border-right: 2px solid #acacac6c;
+}
+
+.train-choice{
+  float: left;
+  height: 80px;
+  width: 55%;
+}
+
 .c-section {
   width: 900px;
   background: #ffffff;

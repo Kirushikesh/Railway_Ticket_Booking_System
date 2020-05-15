@@ -38,6 +38,40 @@ def convert_no_name(from_loc,to_loc):
     to=to['station_id']
     return (fro,to)
 
+def return_train_class(no):
+    cur=mysql.connection.cursor()
+    cur.execute("SELECT total_1ac_seats as 1ac,total_2ac_seats as 2ac,total_3ac_seats as 3ac,total_sl_seats as sl from train_class where train_no=%s",(no,))
+    flag=cur.fetchone()
+    out=[]
+    if( flag['1ac'] > 0 ):
+        out.append('1A')
+    if( flag['2ac'] > 0 ):
+        out.append('2A')
+    if( flag['3ac'] > 0 ):
+        out.append('3A')
+    if( flag['sl'] > 0 ):
+        out.append('SL')
+    return out
+
+def convert_no_week(no):
+    out=[]
+    for i in list(no):
+        if(i=='1'):
+            out.append('Su')
+        elif(i=='2'):
+            out.append('Mo')
+        elif(i=='3'):
+            out.append('Tu')
+        elif(i=='4'):
+            out.append('We')
+        elif(i=='5'):
+            out.append('Th')
+        elif(i=='6'):
+            out.append('Fr')
+        else:
+            out.append('Sa')
+    return out
+    
 def return_all_trains(from_loc,to_loc,date):
     cur=mysql.connection.cursor()
     date=date.isoweekday()
@@ -56,8 +90,10 @@ def return_all_trains(from_loc,to_loc,date):
 
         cur.execute("select * from train where train_no = %s",(i['train_no'],))
         temp=cur.fetchone()
-        temp['available_days']=i['available_days']
+        temp['available_days']=convert_no_week(i['available_days'])
         
+        temp['available_class']=return_train_class(i['train_no'])
+
         cur.execute("""select destination.source_distance-source.source_distance as distance,source.arrival_time as at,destination.arrival_time as dt 
                     from route as source join route as destination on source.train_no=destination.train_no where (
                     source.stop_no=(select stop_no from route_has_station where train_no= %s and station_id=%s) and 

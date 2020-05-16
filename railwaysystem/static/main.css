@@ -125,6 +125,19 @@ a.train-no{
   height: 80px;
   width: 55%;
 }
+.train-choice > .btn {
+  border: 1px solid #dddddd;
+  outline: none;
+  padding: 8px 12px;
+  background-color: #ffffff;
+  cursor: pointer;
+  float: left;
+  font-size: 12px;
+}
+
+.train-choice > .active {
+  background-color: rgb(214, 166, 76);
+}
 
 .c-section {
   width: 900px;

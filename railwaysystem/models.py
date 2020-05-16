@@ -40,17 +40,24 @@ def convert_no_name(from_loc,to_loc):
 
 def return_train_class(no):
     cur=mysql.connection.cursor()
-    cur.execute("SELECT total_1ac_seats as 1ac,total_2ac_seats as 2ac,total_3ac_seats as 3ac,total_sl_seats as sl from train_class where train_no=%s",(no,))
+    cur.execute("SELECT total_1ac_seats as 1ac,fare_1ac,total_2ac_seats as 2ac,fare_2ac,total_3ac_seats as 3ac,fare_3ac,total_sl_seats as sl,fare_sl from train_class where train_no=%s",(no,))
     flag=cur.fetchone()
+    hell=[]
     out=[]
     if( flag['1ac'] > 0 ):
         out.append('1A')
+        hell.append(flag['fare_1ac'])
     if( flag['2ac'] > 0 ):
         out.append('2A')
+        hell.append(flag['fare_2ac'])
     if( flag['3ac'] > 0 ):
         out.append('3A')
+        hell.append(flag['fare_3ac'])
     if( flag['sl'] > 0 ):
         out.append('SL')
+        hell.append(flag['fare_sl'])
+    out.append(hell)
+
     return out
 
 def convert_no_week(no):
@@ -105,7 +112,7 @@ def return_all_trains(from_loc,to_loc,date):
         temp['distance']=temp1['distance']
         temp['source_time']=temp1['at']
         temp['destination_time']=temp1['dt']
-
+        
         information.append(temp)
 
     return information

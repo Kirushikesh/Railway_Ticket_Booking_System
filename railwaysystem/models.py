@@ -120,24 +120,30 @@ def searchby_name_no(name_no):
     cur=mysql.connection.cursor()
     try:
         train_no=int(name_no)
-        flag=cur.execute("select * from train where train_no = %s",(train_no,))
-        if(flag):
-            return cur.fetchone()
-        else:
-            return False
+        return train_no
     except:
         train_name=name_no
-        flag=cur.execute("select * from train where train_name = %s",(train_name,))
-        if(flag):
-            return cur.fetchone()
-        else:
-            return False
-
-def search_station(station_name):
+        flag=cur.execute("select train_no from train where train_name = %s",(train_name,))
+        return cur.fetchone()['train_no']
+def get_station_name(something):
     cur=mysql.connection.cursor()
-    cur.execute("select station_id from station where station_name = %s",(station_name,))
-    id=cur.fetchone()['station_id']
-    cur.execute("select train_no from route_has_station where station_id = %s",(id,))
+    try:
+        id=int(something)
+        flag=cur.execute("select station_name from station where station_id = %s",(id,))
+        if(flag):
+            return (cur.fetchone()['station_name'],id)
+        else:
+            False
+    except:
+        flag=cur.execute("select station_id from station where station_name = %s",(something,))
+        if(flag):
+            return (something,cur.fetchone()['station_id'])
+        else:
+            False
+
+def search_station(id,station_name):
+    cur=mysql.connection.cursor()
+    cur.execute("select train_no from route_has_station where station_id=%s",(id,))
     nos=cur.fetchall()
     information=[]
     for i in nos:
@@ -182,3 +188,26 @@ def email_exist(mail):
     cur=mysql.connection.cursor()
     cur.execute("""select * from user where email_id = %s """,(mail,))
     return cur.fetchone()
+
+def detail_particular_train(something):
+    trainno=searchby_name_no(something)
+    cur=mysql.connection.cursor()
+    cur.execute("""select * from train where train_no = %s """,(trainno,))
+    information=cur.fetchone()
+    cur.execute("""select available_days from train_days where train_no = %s """,(trainno,))
+    information['available_days']=convert_no_week(cur.fetchone()['available_days'])
+    cur.execute("""select source.arrival_time as at,destination.arrival_time as dt from route as source join route as destination 
+                    on source.train_no=destination.train_no where (source.stop_no=(select stop_no from route_has_station where 
+                    train_no= %s and station_id=%s) and destination.stop_no=(select stop_no from route_has_station where 
+                    train_no= %s and station_id=%s) and source.train_no=%s)""",(information['train_no'],information['source_id']
+                ,information['train_no'],information['destination_id'],information['train_no']))
+    flag=cur.fetchone()
+    information['source_time']=flag['at']
+    information['destination_time']=flag['dt']
+    cur.execute("""select s.station_name,rs.station_id,r.source_distance,r.arrival_time,r.departure_time,(r.departure_time-r.arrival_time) as stop_time 
+                    from route_has_station as rs join route as r on r.train_no=rs.train_no and rs.stop_no=r.stop_no join station as s on 
+                    rs.station_id=s.station_id where r.train_no=%s""",(information['train_no'],))
+    station_details=cur.fetchall()
+
+    return (information,station_details)
+    

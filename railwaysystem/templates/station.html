@@ -17,8 +17,8 @@
                 <tr>
                     <td>{{ info['train_no'] }}</td>
                     <td><a href="#">{{ info['train_name'] }}</a></td>
-                    <td><a href="{{ url_for('station_details',station =info['source_name']) }}">{{ info['source_name'] }}</a></td>
-                    <td><a href="{{ url_for('station_details',station =info['destination_name']) }}">{{ info['destination_name'] }}</a></td>
+                    <td><a class="text-uppercase" href="{{ url_for('station_details',station =info['source_name']) }}">{{ info['source_name'] }}</a></td>
+                    <td><a class="text-uppercase" href="{{ url_for('station_details',station =info['destination_name']) }}">{{ info['destination_name'] }}</a></td>
                     <td>{{ info['arrival_time'] }}</td>
                     <td>{{ info['departure_time'] }}</td>
                     <td>{{ info['stop_time'] }}</td>

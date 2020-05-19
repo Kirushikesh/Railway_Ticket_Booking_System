@@ -214,3 +214,41 @@ a.train-no{
   inline-size: auto;
   margin-left: 30px;
 }
+
+.train-table{
+  width: 900px;
+  margin-top: 40px;
+}
+
+.ticket{
+  width: 900px;
+  height: 50px;
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
+.ticket ul{
+  list-style-type: none;
+  margin: 0;
+  background-color: transparent;
+}
+.ticket li {
+  float: left;
+  margin-right: 30px;
+  font-size: larger;
+  display: block;
+  text-align: center;
+  padding: 14px 16px;
+  font-size: large;
+  text-decoration: none;
+}
+.ticket li > .active {
+  border-bottom: 4px solid rgb(247, 116, 10);
+  background-color: transparent;
+}
+.ticket-area{
+  height: 200px;
+  width: 900px;
+  margin-bottom: 50px;
+  border: 2px solid #dddddd;
+  background: #ffffff;
+}

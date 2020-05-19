@@ -38,9 +38,13 @@ def pnrstatus():
 def checktrains():
     form=Trains()
     if form.validate_on_submit():
-        train,station=fm.detail_particular_train(form.train.data)
-        return render_template('particular_train.html',train=train,station=station)
+        return redirect(url_for('train_details',train=form.train.data))
     return render_template('trains.html',form=form)
+
+@app.route("/train/<string:train>")
+def train_details(train):
+    train,station=fm.detail_particular_train(train)
+    return render_template('particular_train.html',train=train,station=station)
 
 @app.route("/searchstation",methods=['GET','POST'])
 def searchstation():

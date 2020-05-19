@@ -98,8 +98,6 @@ def return_all_trains(from_loc,to_loc,date):
         cur.execute("select * from train where train_no = %s",(i['train_no'],))
         temp=cur.fetchone()
         temp['available_days']=convert_no_week(i['available_days'])
-        
-        temp['available_class']=return_train_class(i['train_no'])
 
         cur.execute("""select destination.source_distance-source.source_distance as distance,source.arrival_time as at,destination.arrival_time as dt 
                     from route as source join route as destination on source.train_no=destination.train_no where (
@@ -112,7 +110,8 @@ def return_all_trains(from_loc,to_loc,date):
         temp['distance']=temp1['distance']
         temp['source_time']=temp1['at']
         temp['destination_time']=temp1['dt']
-        
+        temp['available_class']=return_train_class(i['train_no'])
+        temp['default_value']=temp['distance']*temp['available_class'][-1][0]
         information.append(temp)
 
     return information
@@ -196,6 +195,7 @@ def detail_particular_train(something):
     information=cur.fetchone()
     cur.execute("""select available_days from train_days where train_no = %s """,(trainno,))
     information['available_days']=convert_no_week(cur.fetchone()['available_days'])
+
     cur.execute("""select source.arrival_time as at,destination.arrival_time as dt from route as source join route as destination 
                     on source.train_no=destination.train_no where (source.stop_no=(select stop_no from route_has_station where 
                     train_no= %s and station_id=%s) and destination.stop_no=(select stop_no from route_has_station where 
@@ -204,10 +204,17 @@ def detail_particular_train(something):
     flag=cur.fetchone()
     information['source_time']=flag['at']
     information['destination_time']=flag['dt']
-    cur.execute("""select s.station_name,rs.station_id,r.source_distance,r.arrival_time,r.departure_time,(r.departure_time-r.arrival_time) as stop_time 
+    cur.execute("""select s.station_name,rs.station_id,r.source_distance,r.arrival_time,r.departure_time 
                     from route_has_station as rs join route as r on r.train_no=rs.train_no and rs.stop_no=r.stop_no join station as s on 
                     rs.station_id=s.station_id where r.train_no=%s""",(information['train_no'],))
     station_details=cur.fetchall()
-
+    for i in station_details:
+        i['stop_time']=i['departure_time']-i['arrival_time']
+        if(i['arrival_time']==i['departure_time'] and i['station_id']==information['source_id']):
+            i['arrival_time']='starts'
+        elif(i['arrival_time']==i['departure_time'] and i['station_id']==information['destination_id']):
+            i['departure_time']='ends'
+    
+    information['available_class']=return_train_class(trainno)
     return (information,station_details)
     

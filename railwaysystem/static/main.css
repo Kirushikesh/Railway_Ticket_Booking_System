@@ -224,25 +224,27 @@ a.train-no{
   width: 900px;
   height: 50px;
   margin-top: 30px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 .ticket ul{
   list-style-type: none;
   margin: 0;
   background-color: transparent;
 }
-.ticket li {
+.ticket li{
   float: left;
+  padding: 12px 14px;
   margin-right: 30px;
+}
+.ticket li a{
   font-size: larger;
   display: block;
   text-align: center;
-  padding: 14px 16px;
   font-size: large;
   text-decoration: none;
 }
-.ticket li > .active {
-  border-bottom: 4px solid rgb(247, 116, 10);
+li.active {
+  border-bottom: 6px solid rgb(247, 116, 10);
   background-color: transparent;
 }
 .ticket-area{

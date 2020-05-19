@@ -1,7 +1,8 @@
 from railwaysystem import mysql,login_manager
 import calendar
 from flask_login import UserMixin
-
+import json
+import datetime
 @login_manager.user_loader
 def load_user(user_id):
     cur=mysql.connection.cursor()
@@ -188,6 +189,10 @@ def email_exist(mail):
     cur.execute("""select * from user where email_id = %s """,(mail,))
     return cur.fetchone()
 
+def myconverter(o):
+    if isinstance(o, datetime.datetime):
+        return o.__str__()
+
 def detail_particular_train(something):
     trainno=searchby_name_no(something)
     cur=mysql.connection.cursor()
@@ -209,12 +214,16 @@ def detail_particular_train(something):
                     rs.station_id=s.station_id where r.train_no=%s""",(information['train_no'],))
     station_details=cur.fetchall()
     for i in station_details:
-        i['stop_time']=i['departure_time']-i['arrival_time']
+        i['stop_time']=str(i['departure_time']-i['arrival_time'])
         if(i['arrival_time']==i['departure_time'] and i['station_id']==information['source_id']):
             i['arrival_time']='starts'
         elif(i['arrival_time']==i['departure_time'] and i['station_id']==information['destination_id']):
             i['departure_time']='ends'
-    
+        i['arrival_time']=str(i['arrival_time'])
+        i['departure_time']=str(i['departure_time'])
     information['available_class']=return_train_class(trainno)
-    return (information,station_details)
+    default=[]
+    for i in information['available_class'][-1]:
+        default.append(station_details[-1]['source_distance']*i)
+    return (information,station_details,default)
     

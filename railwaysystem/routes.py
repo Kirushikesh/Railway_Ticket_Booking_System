@@ -43,8 +43,8 @@ def checktrains():
 
 @app.route("/train/<string:train>")
 def train_details(train):
-    train,station=fm.detail_particular_train(train)
-    return render_template('particular_train.html',train=train,station=station)
+    train,station,default=fm.detail_particular_train(train)
+    return render_template('particular_train.html',train=train,station=station,default=default)
 
 @app.route("/searchstation",methods=['GET','POST'])
 def searchstation():

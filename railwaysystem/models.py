@@ -209,7 +209,7 @@ def detail_particular_train(something):
     flag=cur.fetchone()
     information['source_time']=flag['at']
     information['destination_time']=flag['dt']
-    cur.execute("""select s.station_name,rs.station_id,r.source_distance,r.arrival_time,r.departure_time 
+    cur.execute("""select s.station_name,rs.station_id,r.source_distance,r.arrival_time,r.departure_time,r.stop_no
                     from route_has_station as rs join route as r on r.train_no=rs.train_no and rs.stop_no=r.stop_no join station as s on 
                     rs.station_id=s.station_id where r.train_no=%s""",(information['train_no'],))
     station_details=cur.fetchall()
@@ -222,6 +222,13 @@ def detail_particular_train(something):
         i['arrival_time']=str(i['arrival_time'])
         i['departure_time']=str(i['departure_time'])
     information['available_class']=return_train_class(trainno)
+    
+    cur.execute("select on_date from train_status where train_no=%s",(information['train_no'],))
+    flag=cur.fetchall()
+    information['days']=[]
+    for i in flag:
+        information['days'].append(i['on_date'])
+    
     default=[]
     for i in information['available_class'][-1]:
         default.append(station_details[-1]['source_distance']*i)

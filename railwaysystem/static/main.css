@@ -248,9 +248,19 @@ li.active {
   background-color: transparent;
 }
 .ticket-area{
-  height: 200px;
+  height: 180px;
   width: 900px;
   margin-bottom: 50px;
   border: 2px solid #dddddd;
   background: #ffffff;
+}
+
+.box{
+  float: left;
+  height: 100px;
+  width: 140px;
+  margin-top: 39px;
+  margin-left: 15px;
+  border: 2px solid #dddddd;
+  padding: 10px;
 }

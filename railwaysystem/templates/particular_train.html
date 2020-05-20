@@ -52,13 +52,19 @@
     </div>
     <div class="ticket">
         <ul id="imp">
-            <li class="active" onclick="clicke(this)" ><a>{{ train['available_class'][0] }}<i class="fa" style="font-size:15px;margin-left: 5px;margin-right: 5px;">&#xf156;</i><span class="kk">{{ default[0] }}</span></a></li>
+            <li class="active" onclick="clicke(this,0)" ><a>{{ train['available_class'][0] }}<i class="fa" style="font-size:15px;margin-left: 5px;margin-right: 5px;">&#xf156;</i><span class="kk">{{ default[0] }}</span></a></li>
             {% for i in range(1,train['available_class']|length -1) %}
-            <li class="" onclick="clicke(this)" ><a>{{ train['available_class'][i] }}<i class="fa" style="font-size:15px;margin-left: 5px;margin-right: 5px;">&#xf156;</i><span class="kk">{{ default[i] }}</span></a></li>
+            <li class="" onclick="clicke(this,{{ i }})" ><a>{{ train['available_class'][i] }}<i class="fa" style="font-size:15px;margin-left: 5px;margin-right: 5px;">&#xf156;</i><span class="kk">{{ default[i] }}</span></a></li>
             {% endfor %}
         </ul>
     </div>
     <div class="ticket-area">
+        {% for i in range(0,train['available_days']|length) %}
+            <div class="box">
+                <p>{{ train['days'][i] }}, {{ train['available_days'][i] }}</p>
+                <p><span class="how"></span>  <span class="hell"></span></p>
+            </div>
+        {% endfor %}
     </div>
     <div style="border-bottom: 1px solid black;margin-top: 50px;"></div>
     <div class="train-table mb-5">
@@ -88,7 +94,8 @@
         var station = {{ station|tojson }};
         var aclass={{ train['available_class']|tojson }};
         var i,distance;
-        var length=aclass.length
+        var length=aclass.length;
+        var trainno="{{ train['train_no'] }}";
         var e = document.getElementsByClassName("aa");
         function myfunction()
         {
@@ -108,11 +115,61 @@
                 all[i].innerHTML=aclass[length-1][i]*distance;
             }
         }
-        function clicke(element)
+        function clicke(element,number)
         {
             var current = document.getElementsByClassName("active");
             current[0].className = current[0].className.replace("active", "");
             element.className += "active";
+            var from,to;
+            var entry={};
+            console.log(aclass[number])
+            entry['t_class']=aclass[number];
+            entry['train_no']=trainno;
+            for(i=0;i<station.length;i++)
+            {
+                if(station[i]['station_name']==e[0].options[e[0].selectedIndex].text)
+                {
+                    entry['from']=station[i]['stop_no']
+                }
+                else if(station[i]['station_name']==e[1].options[e[1].selectedIndex].text)
+                {
+                    entry['to']=station[i]['stop_no']
+                }
+            }
+            
+            fetch(`${window.origin}/giveawayseats`, {
+                method: "POST",
+                credentials: "include",
+                body: JSON.stringify(entry),
+                cache: "no-cache",
+                headers: new Headers({
+                    "content-type": "application/json"
+                })
+            })
+            .then(function (response) {
+                if (response.status !== 200) {
+                    console.log(`Looks like there was a problem. Status code: ${response.status}`);
+                    return;
+                }
+                response.json().then(function (data) {
+                    for(i=0;i<data.length;i++)
+                    {
+                        if(data[i]>0)
+                        {
+                            document.getElementsByClassName("how")[i].innerHTML="Available :";
+                            document.getElementsByClassName("box")[i].style.backgroundColor = "lightgreen";
+                            document.getElementsByClassName("hell")[i].innerHTML=data[i];
+                        }
+                        else{
+                            document.getElementsByClassName("how")[i].innerHTML="Not Available";
+                            document.getElementsByClassName("box")[i].style.backgroundColor = "tomato";
+                        }
+                    }
+                });
+            })
+            .catch(function (error) {
+                console.log("Fetch error: " + error);
+            });
         }
     </script>
 {% endblock content%}

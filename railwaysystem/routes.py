@@ -1,9 +1,10 @@
-from flask import render_template,url_for,flash,redirect,request
+from flask import render_template,url_for,flash,redirect,request,jsonify,make_response
 from railwaysystem.models import User
 from railwaysystem.forms import SearchTrains,RunningStatus,PnrStatus,Trains,Station,RegistrationForm,LoginForm
 from railwaysystem import app,mysql,bcrypt
 import railwaysystem.models as fm
 from flask_login import login_user,current_user,logout_user,login_required
+import railwaysystem.train.ex as tt
 
 @app.route("/")
 @app.route("/home")
@@ -99,3 +100,10 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('home'))
+
+@app.route("/giveawayseats",methods=['POST'])
+def give():
+    req=request.get_json()
+    arr=tt.seat_availability(req['train_no'],req['t_class'],req['from'],req['to'])
+    res=make_response(jsonify(arr),200)
+    return res

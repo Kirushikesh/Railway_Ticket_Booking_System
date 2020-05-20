@@ -1,6 +1,6 @@
 def initialise(dic,inter_stations,dicto):
     for key,value in dicto.items():
-        dic[key]=[]
+        file.write(key+","+)
         for i in range(value):
             dic[key].append(['0']*inter_stations)
 def return_seat_index(lis,fro,to):
@@ -27,8 +27,8 @@ def no_of_seats(lis,fro,to):
             no+=1
     return no
 class base:
-    alldays={}
     def __init__(self,days_availability,inter_stations,dic_seats):
+        file=open('1.txt','w')
         if('1' in days_availability):
             self.alldays['Sunday']={}
             initialise(self.alldays['Sunday'],inter_stations,dic_seats)
@@ -69,7 +69,8 @@ class base:
         else:
             print('Seats are present with ',str(noofseat),' no of seats')
 
-"""d={'1a':2,'2a':2,'3a':2,'sl':2}
+"""
+d={'1a':2,'2a':2,'3a':2,'sl':2}
 my=base('13',3,d)  
 my.available_seats('Tuesday',0,2,'1a')
 my.book_day('Tuesday',0,2,'1a')
@@ -78,10 +79,8 @@ my.book_day('Tuesday',0,2,'1a')
 my.available_seats('Tuesday',0,2,'1a')
 my.book_day('Tuesday',0,2,'1a')
 my.available_seats('Tuesday',0,2,'sl')
-my.book_day('Tuesday',2,3,'1a')"""
-
-d={'1a':2,'2a':2,'3a':2,'sl':2}
+my.book_day('Tuesday',2,3,'1a')
+"""
 main={}
 main[12345]=base('13',3,d)
 main[12456]=base('237',4,d)
-print(main[12345].alldays['Sunday'])

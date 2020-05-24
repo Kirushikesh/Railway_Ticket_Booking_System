@@ -1,6 +1,6 @@
 def initialise(dic,inter_stations,dicto):
     for key,value in dicto.items():
-        file.write(key+","+)
+        file.write(key+","+value)
         for i in range(value):
             dic[key].append(['0']*inter_stations)
 def return_seat_index(lis,fro,to):

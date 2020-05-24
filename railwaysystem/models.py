@@ -29,8 +29,8 @@ class User(UserMixin):
     def update_record(self,name,mail):
         self.username=name
         self.email=mail
-        cur=mysql.connection.cursor()
-        cur.execute("UPDATE users SET username = %s , email = %s WHERE id = %s",(self.username,self.email,self.id,))
+        #cur=mysql.connection.cursor()
+        #cur.execute("UPDATE users SET username = %s , email = %s WHERE id = %s",(self.username,self.email,self.id,))
 
 def convert_no_name(from_loc,to_loc):
     cur=mysql.connection.cursor()
@@ -127,7 +127,7 @@ def searchby_name_no(name_no):
         return train_no
     except:
         train_name=name_no
-        flag=cur.execute("select train_no from train where train_name = %s",(train_name,))
+        cur.execute("select train_no from train where train_name = %s",(train_name,))
         return cur.fetchone()['train_no']
 
 def get_station_name(something):
@@ -195,7 +195,7 @@ def email_exist(mail):
     return cur.fetchone()
 
 def myconverter(o):
-    if isinstance(o, datetime.datetime):
+    if isinstance(o, datetime):
         return o.__str__()
 
 def detail_particular_train(something):
@@ -276,14 +276,24 @@ def book_train_fm(passenger_dict,train_dict,book_class,noofpass,fromind,toind):
     fro_id=flag['station_id']
     fro=flag['stop_no']
 
+    #print
     cur.execute("select rs.stop_no,s.station_id from station as s join route_has_station as rs on s.station_id=rs.station_id where rs.train_no=%s and s.station_name=%s",(train_dict['no'],train_dict['to'],))
     flag=cur.fetchone()
     to_id=flag['station_id']
     to=flag['stop_no']
 
+    if(book_class[-2:]=='_R'):
+        status_no=tex.no_rac_booked(train_dict['no'],return_full_day(train_dict['day']),book_class,fro,to)
+        status_no+=1
+        #print(status_no)
+
     information['seatno']=tex.book_train(train_dict['no'],return_full_day(train_dict['day']),book_class,fro,to,noofpass)
-    cur.execute("select available_days from train_days where train_no=%s",(train_dict['no'],))
-    information['available_days']=cur.fetchone()['available_days']
+    cur.execute("select available_days,train_name from train_days join train on train_days.train_no=train.train_no where train.train_no=%s",(train_dict['no'],))
+    flag=cur.fetchone()
+    information['available_days']=flag['available_days']
+    information['train_name']=flag['train_name']
+    information['class']=book_class
+    information['status_no']=[]
 
     flag=0
     for i in range(fromind,toind):
@@ -296,12 +306,15 @@ def book_train_fm(passenger_dict,train_dict,book_class,noofpass,fromind,toind):
         mysql.connection.commit()
         cur.execute("insert into passenger_ticket values(%s,%s,%s,%s,%s)",(pnr,book_class,train_dict['rate'],fro_id,to_id,))
         mysql.connection.commit()
-        date=datetime.strptime(train_dict['date'][:-3],"%a, %d %b %Y %H:%M:%S ")
+        date=train_dict['date']
 
         if(book_class[-2:]!='_R'):
-            cur.execute("insert into reservation values(%s,%s,%s,%s,%s,%s)",(current_user.email_id,pnr,int(train_dict['no']),information['available_days'],"CNF",date,))
+            information['status_no'].append(0)
+            cur.execute("insert into reservation values(%s,%s,%s,%s,%s,0,%s)",(current_user.email_id,pnr,int(train_dict['no']),information['available_days'],"CNF",date,))
         else:
-            cur.execute("insert into reservation values(%s,%s,%s,%s,%s,%s)",(current_user.email_id,pnr,int(train_dict['no']),information['available_days'],"RAC",date,))
+            information['status_no'].append(status_no)
+            cur.execute("insert into reservation values(%s,%s,%s,%s,%s,%s,%s)",(current_user.email_id,pnr,int(train_dict['no']),information['available_days'],"RAC",status_no,date,))
+            status_no+=1
         mysql.connection.commit()
 
         flag+=1
@@ -321,11 +334,15 @@ def no_of_wl(trainno,day,fro,to,t_class):
     fro=cur.fetchone()['station_id']
     cur.execute("select s.station_id from station as s join route_has_station as rs on s.station_id=rs.station_id where train_no=%s and rs.stop_no=%s",(trainno,to,))
     to=cur.fetchone()['station_id']
-    day=datetime.strptime(day[:-3],"%a, %d %b %Y %H:%M:%S ")
-    flag=cur.execute("""select * from reservation as r join passenger_ticket as pt on r.pnr=pt.pnr where 
-                (r.reservation_status="WL" and r.train_no=%s and r.reservation_date=%s and pt.class_type=%s and
-                     pt.source_id=%s and pt.destination_id=%s)""",(trainno,day,t_class,fro,to,))
-    return flag
+
+    try:
+        day=datetime.strptime(day[:-3],"%a, %d %b %Y %H:%M:%S ")
+    finally:
+        #print(trainno,day,t_class,fro,to)
+        flag=cur.execute("""select * from reservation as r join passenger_ticket as pt on r.pnr=pt.pnr where 
+                    (r.reservation_status="WL" and r.train_no=%s and r.reservation_date=%s and pt.class_type=%s and
+                        pt.source_id=%s and pt.destination_id=%s)""",(trainno,day,t_class,fro,to,))
+        return flag
 
 def book_wl(passenger_dict,train_dict,noofpass,fromind,toind):
     cur=mysql.connection.cursor()
@@ -342,8 +359,14 @@ def book_wl(passenger_dict,train_dict,noofpass,fromind,toind):
     to_id=flag['station_id']
     to=flag['stop_no']
 
-    cur.execute("select available_days from train_days where train_no=%s",(train_dict['no'],))
-    information['available_days']=cur.fetchone()['available_days']
+    information['seat_no']=[]
+    cur.execute("select available_days,train_name from train_days join train on train_days.train_no=train.train_no where train.train_no=%s",(train_dict['no'],))
+    flag=cur.fetchone()
+    information['available_days']=flag['available_days']
+    information['train_name']=flag['train_name']
+    information['class']="WL"
+    status=no_of_wl(int(train_dict['no']),train_dict['date'],fro,to,train_dict['t_class'])+1
+    information['status_no']=[]
 
     for i in range(fromind,toind):
         age=str(i)+'age'
@@ -351,12 +374,16 @@ def book_wl(passenger_dict,train_dict,noofpass,fromind,toind):
         gen=str(i)+'gender'
         pnr=generate_pnr()
         information['pnr_no'].append(pnr)
-        date=datetime.strptime(train_dict['date'][:-3],"%a, %d %b %Y %H:%M:%S ")
+        date=train_dict['date']
+        information['seat_no'].append('NaN')
 
         cur.execute("insert into passenger(pnr,passenger_name,age,gender) values(%s,%s,%s,%s)",(pnr,passenger_dict[name],passenger_dict[age],passenger_dict[gen],))
         mysql.connection.commit()
         cur.execute("insert into passenger_ticket values(%s,%s,%s,%s,%s)",(pnr,train_dict['t_class'],train_dict['rate'],fro_id,to_id,))
         mysql.connection.commit()
-        cur.execute("insert into reservation values(%s,%s,%s,%s,%s,%s)",(current_user.email_id,pnr,int(train_dict['no']),information['available_days'],"WL",date,))
+        information['status_no'].append(status)
+        cur.execute("insert into reservation values(%s,%s,%s,%s,%s,%s,%s)",(current_user.email_id,pnr,int(train_dict['no']),information['available_days'],"WL",status,date,))
         mysql.connection.commit()
+        status+=1
+
     return information

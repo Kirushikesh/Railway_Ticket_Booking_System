@@ -145,7 +145,7 @@ def final_book():
         fro_stopno,to_stopno=fm.return_stop_no(aglobal['no'],aglobal['from'],aglobal['to'])
         from_ind=1
         to_ind=1
-    
+
         while(noofpass>0):
             vac_common=tt.seat_availability_onthatday(int(aglobal['no']),day,aglobal['t_class'],fro_stopno,to_stopno)
             if(vac_common=='NaN'):
@@ -167,7 +167,8 @@ def final_book():
                     to_ind=vac_common+1
                     out1=fm.book_train_fm(data,aglobal,aglobal['t_class'],vac_common,from_ind,to_ind)
                     noofpass-=vac_common
-            
+                
+                status_no=1
                 out.append(out1)
 
             elif(vac_common<0):
@@ -182,5 +183,7 @@ def final_book():
                     out1=fm.book_train_fm(data,aglobal,aglobal['t_class']+'_R',(-1*vac_common),from_ind,to_ind)
                     noofpass-=(-1*vac_common)
                 
+                status_no=1
                 out.append(out1)
-    return "thanks"
+    #print(out,aglobal,data)
+    return render_template('displayticket.html',form=out,train_details=aglobal,passengers=data)

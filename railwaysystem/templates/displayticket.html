@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+{% block content %}
+    {% for train in form %}
+        {% for i in range(1,train['pnr_no']|length+1) %}
+        <div class="per-ticket">
+            <p style="background-color: blue;text-align: center;color: white;">HAPPY JOURNEY</p>
+            <div style="float: left;width: 20%;height: 90px;border: 1px solid black;">
+                <h6 style="border-bottom: 1px solid black;padding: 10px;">PNR No:</h6>
+                <h6 style="padding:10px">{{ train['pnr_no'][i-1] }}</h6>
+            </div>
+            <div style="float: left;width: 80%;height: 90px;border: 1px solid black;">
+                <h6 style="border-bottom: 1px solid black;padding: 10px;">
+                    <span style="margin: 0px 50px;">Train No</span>
+                    <span style="margin: 0px 50px;">Date</span>
+                    <span style="margin: 0px 50px;">Km</span>
+                    <span style="margin: 0px 50px;">On Day</span>
+                </h6>
+                <h6 style="padding: 10px">
+                    <span style="margin: 0px 50px;">{{ train_details['no'] }}</span>
+                    <span style="margin: 0px 50px;">{{ train_details['date'] }}</span>
+                    <span style="margin: 0px 50px;">{{ train_details['km'] }}</span>
+                    <span style="margin: 0px 50px;">{{ train_details['day'] }}</span>
+                </h6>
+            </div>
+            <div style="float: left;width: 10%;height: 120px;border: 1px solid black;">
+                <h6 style="border-bottom: 1px solid black;padding: 10px;" >CLASS</h6>
+                <h6 style="padding:15px">{{ train['class'] }}</h6>
+            </div>
+            <div style="float: left;width: 90%;height: 120px;border: 1px solid black;">
+                <p style="text-align: center;">JOURNEY CUM RESERVATION TICKET</p>
+                <h6 style="border-bottom: 1px solid black;padding: 10px;" >
+                    <span style="margin: 0px 12%;">Train Name</span>
+                    <span style="margin: 0px 12%;">From</span>
+                    <span style="margin: 0px 12%;">To</span>
+                </h6>
+                <h6 style="padding: 10px;" >
+                    <span style="margin: 0px 12%;">{{ train['train_name'] }}</span>
+                    <span style="margin: 0px 12%;">{{ train_details['from'] }}</span>
+                    <span style="margin: 0px 12%;">{{ train_details['to'] }}</span>
+                </h6>
+            </div>
+            <div style="float:left;height: 100px;width: 100%;border: 1px solid black;">
+                <h6 style="border-bottom: 1px solid black;padding: 10px;">
+                    <span style="margin: 0px 4%;">Reservation Status</span>
+                    <span style="margin: 0px 5%;">Coach</span>
+                    <span style="margin: 0px 5%;">Seat No</span>
+                    <span style="margin: 0px 5%;">Sex</span>
+                    <span style="margin: 0px 5%;">Age</span>
+                    <span style="margin: 0px 5%;">Name</span>
+                </h6>
+                {% set name = i|string +'name' %}
+                {% set age = i|string + 'age' %}
+                {% set gender = i|string + 'gender' %}
+                <h6 style="padding: 10px;">
+                    <span style="margin: 0px 6%;">{{ train['class'] }},{{ train['status_no'][i] }}</span>
+                    <span style="margin: 0px 6%;">{{ train['class'] }}</span>
+                    <span style="margin: 0px 6%;">{{ train['seat_no'][i-1] }}</span>
+                    <span style="margin: 0px 6%;">{{ passengers[gender] }}</span>
+                    <span style="margin: 0px 5%;">{{ passengers[age] }}</span>
+                    <span style="margin: 0px 5%;">{{ passengers[name] }}</span>
+                </h6>
+            </div>
+        </div>
+        {% endfor %}
+    {% endfor %}
+{% endblock content%}

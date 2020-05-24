@@ -5,7 +5,7 @@
         <h4>
             <span class="float-left">Train no: {{ form['no']}}</span>
             <span style="margin-left: 140px;" >Train Class: {{ form['t_class'] }}</span>
-            <span class="float-right">On Date: {{ form['date'][:-13] }}</span> 
+            <span class="float-right">On Date: {{ form['date'] }}</span> 
         </h4>
         <h4>
             <span class="float-left">From: {{ form['from'] }}</span>
@@ -78,10 +78,13 @@
         }
         function my()
         {
-            var txt;
+            var txt={{ form|tojson }};
             if (confirm("Are you sure want to book a ticket\n With following details")) {
                 $('#myform').attr('action', '/passengers');
-            } 
+            }
+            else{
+                window.location.href='http://127.0.0.1:5000/train/'+ txt['no'];
+            }
         }
     </script>
 {% endblock content%}

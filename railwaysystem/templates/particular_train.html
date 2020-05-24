@@ -61,7 +61,7 @@
     <div class="ticket-area">
         {% for i in range(0,train['available_days']|length) %}
             <button class="box" onclick="pass(this,{{ train['train_no'] }},{{ i }})">
-                <p><span>{{ train['days'][i] }}</span>, {{ train['available_days'][i] }}</p>
+                <p><span>{{ train['days'][i] }}</span>, <span>{{ train['available_days'][i] }}</span></p>
                 <p><span class="how"></span>  <span class="hell"></span></p>
             </button>
         {% endfor %}
@@ -171,13 +171,11 @@
         {
             var from = e[0].options[e[0].selectedIndex].text;
             var to = e[1].options[e[1].selectedIndex].text;
-            var day={{ train['available_days']|tojson }};
-            day=day[eltno];
-            var date={{ train['days']|tojson }};
-            date=date[eltno];
+            var date=that.getElementsByTagName("P")[0].getElementsByTagName("SPAN")[0].innerHTML;
+            var day=that.getElementsByTagName("P")[0].getElementsByTagName("SPAN")[1].innerHTML;
             var t_class=document.getElementsByClassName("active")[0].getElementsByTagName("A")[0].getElementsByTagName("SPAN")[0].innerHTML;
             var rate=document.getElementsByClassName("active")[0].getElementsByTagName("A")[0].getElementsByTagName("SPAN")[1].innerHTML;
-            window.location.href='http://127.0.0.1:5000/bookpassenger?no=' + trainno  + '&day=' + day + '&t_class=' + t_class + '&from=' + from + '&to=' + to +'&date=' + date + '&rate=' +rate;
+            window.location.href='http://127.0.0.1:5000/bookpassenger?no=' + trainno  + '&day=' + day + '&t_class=' + t_class + '&from=' + from + '&to=' + to +'&date=' + date + '&rate=' +rate+ '&km=' + distance;
         }
     </script>
 {% endblock content%}

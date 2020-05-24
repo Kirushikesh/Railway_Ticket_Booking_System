@@ -53,3 +53,10 @@ class LoginForm(FlaskForm):
     password=PasswordField('Password',validators=[DataRequired()])
     remember=BooleanField('Remember ME')
     submit=SubmitField('Log in')
+
+class Passenger_details(FlaskForm):
+    p_name=StringField('Passenger Name',validators=[DataRequired(),
+                                    Length(min=2,max=20)], render_kw={"placeholder": "enter the name here"})
+    age=IntegerField('Age',validators=[DataRequired()])
+    gender=RadioField('Gender',choices = [('M','Male'), ('F','Female')],default='M')
+    submit=SubmitField('Book')

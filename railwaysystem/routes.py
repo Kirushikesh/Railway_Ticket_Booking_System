@@ -5,6 +5,8 @@ from railwaysystem import app,mysql,bcrypt
 import railwaysystem.models as fm
 from flask_login import login_user,current_user,logout_user,login_required
 import railwaysystem.train.ex as tt
+from datetime import datetime
+aglobal={}
 
 @app.route("/")
 @app.route("/home")
@@ -105,5 +107,80 @@ def logout():
 def give():
     req=request.get_json()
     arr=tt.seat_availability(req['train_no'],req['t_class'],req['from'],req['to'])
-    res=make_response(jsonify(arr),200)
+    out=[]
+    for i in range(len(arr)):
+        flag=[]
+        if(arr[i]=='NaN'):
+            noofwl=fm.no_of_wl(req['train_no'],req['date'][i],req['from'],req['to'],req['t_class'])
+            flag.append('Waiting List: ')
+            flag.append('tomato')
+            flag.append(noofwl)
+        elif(arr[i]>0):
+            flag.append('Available: ')
+            flag.append('lightgreen')
+            flag.append(arr[i])
+        else:
+            flag.append('RAC: ')
+            flag.append('darkorange')
+            flag.append(-1*arr[i])
+        out.append(flag)
+    res=make_response(jsonify(out),200)
     return res
+
+@app.route("/bookpassenger",methods=['GET','POST'])
+@login_required
+def book():
+    global aglobal
+    aglobal=request.args
+    return render_template('passengerdetails.html',form=aglobal)
+
+@app.route("/passengers",methods=['POST'])
+def final_book():
+    global aglobal
+    if(request.method=='POST'):
+        out=[]
+        data=request.form
+        noofpass=int(data['noofpass'])
+        day=fm.return_full_day(aglobal['day'])
+        fro_stopno,to_stopno=fm.return_stop_no(aglobal['no'],aglobal['from'],aglobal['to'])
+        from_ind=1
+        to_ind=1
+    
+        while(noofpass>0):
+            vac_common=tt.seat_availability_onthatday(int(aglobal['no']),day,aglobal['t_class'],fro_stopno,to_stopno)
+            if(vac_common=='NaN'):
+                print('NAN')
+                from_ind=to_ind
+                to_ind=from_ind+noofpass
+                out1=fm.book_wl(data,aglobal,noofpass,from_ind,to_ind)
+                noofpass=0
+                out.append(out1)
+
+            elif(vac_common>0):
+                from_ind=1
+                #print(from_ind,vac_common,noofpass)
+                if(vac_common>=noofpass):
+                    to_ind=noofpass+1
+                    out1=fm.book_train_fm(data,aglobal,aglobal['t_class'],noofpass,from_ind,to_ind)
+                    noofpass=0
+                else:
+                    to_ind=vac_common+1
+                    out1=fm.book_train_fm(data,aglobal,aglobal['t_class'],vac_common,from_ind,to_ind)
+                    noofpass-=vac_common
+            
+                out.append(out1)
+
+            elif(vac_common<0):
+                from_ind=to_ind
+                #print(from_ind,to_ind,vac_common,noofpass)
+                if((-1*vac_common)>=noofpass):
+                    to_ind=from_ind+noofpass
+                    out1=fm.book_train_fm(data,aglobal,aglobal['t_class']+'_R',noofpass,from_ind,to_ind)
+                    noofpass=0
+                else:
+                    to_ind=from_ind+(-1*vac_common)
+                    out1=fm.book_train_fm(data,aglobal,aglobal['t_class']+'_R',(-1*vac_common),from_ind,to_ind)
+                    noofpass-=(-1*vac_common)
+                
+                out.append(out1)
+    return "thanks"

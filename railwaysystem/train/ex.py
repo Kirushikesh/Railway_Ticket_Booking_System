@@ -294,9 +294,49 @@ def no_rac_booked(train_no,day,t_class,fro,to):
                 #print(j)
         else:
              i+=skip+1
+def cancel_booking(trainno,day,t_class,fro,to,seat_no):
+    file=open(str(trainno)+".txt",'r')
+    lists=file.readlines()
+    i=0
+    flag=1
+    while(i<len(lists)):
+        word=lists[i].split(',')
+        skip=int(word[1][:-1])
+        if(word[0]==day):
+            j=i+1
+            upto=j+skip
+            while(j<upto):
+                word=lists[j].split(',')
+                skip1=int(word[1][:-1])
+                if(word[0]==t_class):
+                    k=j+1
+                    word=lists[k+seat_no].split(',')
+                    word[-1]=word[-1][:-1]
+                    word=list(map(int,word))
+                    for m in range(fro,to):
+                        word[m]-=1
+                    word=list(map(str,word))
+                    word[-1]+='\n'
+                    lists[k+seat_no]=','.join(word)
+                    flag=0
+                    
+                if(flag==0):
+                    break
+                else:
+                    j+=skip1+1
+        if(flag==0):
+            break 
+        else:
+           i+=skip+1
+    file.close()
+    #print(lists)
+    file=open(str(trainno)+".txt",'w')
+    file.writelines(lists)
+    file.close()
 #print(seat_availability_onthatday(1,'Sunday','3A',0,2))
 #print(seat_availability(1,'3A',0,2))
-#print(book_train(1,'Sunday','3A_R',0,2,2))
+#print(book_train(1,'Sunday','3A_R',0,2,1))
+#cancel_booking(1,'Sunday','3A_R',0,2,1)
 #store_train_classes(1,"123",3,{'1A':5,'2A':4,'2A_R':2,'3A':4,'3A_R':2,'SL':5,'SL_R':3})
 #store_train_classes(2,"347",2,{'1A':0,'2A':4,'2A_R':3,'3A':3,'3A_R':1,'SL':3,'SL_R':1})
 #store_train_classes(3,"147",3,{'1A':5,'2A':6,'2A_R':4,'3A':2,'3A_R':1,'SL':0,'SL_R':0})

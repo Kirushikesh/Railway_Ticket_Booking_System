@@ -33,7 +33,7 @@
             </div>
         </form>
     </div>
-    <script>
+    <script type="text/javascript">
         var norec;
         function myfunction()
         {
@@ -61,13 +61,13 @@
                 tb1+="<tr>"+
                         "<td>"+ i +"</td>"+
                         "<td>"+
-                            "<input type='text' placeholder='Name' name='txtname'>".replace('txtname',name)+
+                            "<input type='text' placeholder='Name' name='txtname' required>".replace('txtname',name)+
                         "</td>"+
                         "<td>"+
-                            "<input type='text' placeholder='Age' name='txtage'>".replace('txtage',age)+
+                            "<input type='number' placeholder='Age' name='txtage' min='1' max='100' required>".replace('txtage',age)+
                         "</td>"+
                         "<td>"+
-                            "<input type='radio' name='gender' value='M'>Male<br />".replace('gender',gender)+
+                            "<input type='radio' name='gender' value='M' required>Male<br />".replace('gender',gender)+
                             "<input type='radio' name='gender' value='F'>Female".replace('gender',gender)+
                         "</td>"+
                     "</tr>";
@@ -78,12 +78,15 @@
         }
         function my()
         {
-            var txt={{ form|tojson }};
-            if (confirm("Are you sure want to book a ticket\n With following details")) {
-                $('#myform').attr('action', '/passengers');
+            var he=confirm("Are you sure want to book a ticket\n With following details");
+            console.log(he);
+            if (he==true) 
+            {
+                ($('#myform').attr('action', '/passengers'));
             }
-            else{
-                window.location.href='http://127.0.0.1:5000/train/'+ txt['no'];
+            else
+            {
+                window.location.href='http://127.0.0.1:5000/';
             }
         }
     </script>

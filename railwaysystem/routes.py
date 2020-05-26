@@ -1,6 +1,6 @@
-from flask import render_template,url_for,flash,redirect,request,jsonify,make_response
+from flask import Flask,render_template,url_for,flash,redirect,request,jsonify,make_response
 from railwaysystem.models import User
-from railwaysystem.forms import SearchTrains,RunningStatus,PnrStatus,Trains,Station,RegistrationForm,LoginForm
+from railwaysystem.forms import SearchTrains,PnrStatus,Trains,Station,RegistrationForm,LoginForm
 from railwaysystem import app,mysql,bcrypt
 import railwaysystem.models as fm
 from flask_login import login_user,current_user,logout_user,login_required
@@ -18,23 +18,23 @@ def searchtrain():
     form=SearchTrains()
     if form.validate_on_submit():
         output=fm.return_all_trains(form.fromloc.data,form.toloc.data,form.Date.data)
-        return render_template('result_trains.html',form=output)
+        if output:
+            return render_template('result_trains.html',form=output)
+        else:
+            flash(f'No Results Available','danger')
+            return render_template('searchtrain.html',title='About',form=form)
     return render_template('searchtrain.html',title='About',form=form)
-
-@app.route("/runningstatus",methods=['GET','POST'])
-def runningstatus():
-    form=RunningStatus()
-    if form.validate_on_submit():
-        flash(f'Valid thing','success')
-        return redirect(url_for('home'))
-    return render_template('runningstatus.html',form=form)
 
 @app.route("/pnrcheck",methods=['GET','POST'])
 def pnrstatus():
     form=PnrStatus()
     if form.validate_on_submit():
-        flash(f'Valid thing','success')
-        return redirect(url_for('home'))
+        details=fm.return_pnrdetails(form.pnr_no.data)
+        if details:
+            return render_template('pnr_ticket.html',form=details)
+        else:
+            flash(f'No Results Available','danger')
+            return render_template('pnrcheck.html',form=form)
     return render_template('pnrcheck.html',form=form)
 
 @app.route("/trains",methods=['GET','POST'])
@@ -187,3 +187,16 @@ def final_book():
                 out.append(out1)
     #print(out,aglobal,data)
     return render_template('displayticket.html',form=out,train_details=aglobal,passengers=data)
+
+@app.route("/cancelticket/<string:pnr>")
+@login_required
+def cancel(pnr):
+    fm.cancel_ticket(int(pnr))
+    flash("ticket cancelled successfully","success")
+    return redirect(url_for('home'))
+
+@app.route("/mybooking")
+@login_required
+def mybooking():
+    output=fm.mybooking_user(current_user.email_id)
+    return render_template('mybooking.html',form=output)

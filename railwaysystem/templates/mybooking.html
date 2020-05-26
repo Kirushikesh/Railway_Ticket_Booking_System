@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="c-section">
+        <h2>{{ current_user.user_name }} My Booking</h2>
+        <p class="border-bottom mb-4">All tickets booked Since</p>
+        <table>
+            <tr>
+                <th>Pnr No</th>
+                <th>Train No</th> 
+                <th>Class</th>
+                <th>Current status</th>
+                <th>Booking Date</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Passenger Name</th>
+              </tr>
+            {% for info in form %}
+                <tr>
+                    <td>{{ info['pnr'] }}</td>
+                    <td>{{ info['train_no'] }}</td>
+                    <td>{{ info['class_type'] }}</td>
+                    <td>{{ info['reservation_status'] }}</td>
+                    <td>{{ info['reservation_date'] }}</td>
+                    <td>{{ info['source_id'] }}</td>
+                    <td>{{ info['destination_id'] }}</td>
+                    <td>{{ info['passenger_name'] }}</td>
+                </tr>  
+            {% endfor %}
+        </table>
+    </div>
+{% endblock content%}

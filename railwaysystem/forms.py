@@ -5,28 +5,67 @@ from datetime import datetime
 from railwaysystem.models import User
 import railwaysystem.models as fm
 from flask_login import current_user
+from railwaysystem import mysql
+
 class SearchTrains(FlaskForm):
     fromloc=StringField('From',validators=[DataRequired()])
     toloc=StringField('To',validators=[DataRequired()])
     Date=DateField('Date',format='%Y-%m-%d',
                         validators = [DataRequired('enter the date in the format yyyy-mm-dd')])
     submit=SubmitField('Search')
- 
-class RunningStatus(FlaskForm):
-    trainname_trainno=StringField('Enter Train Name/Train No',validators=[DataRequired()])
-    submit=SubmitField('Search')
 
+    def validate_fromloc(self,fromloc):
+        cur=mysql.connection.cursor()
+        cur.execute("select * from station where station_name=%s",(fromloc.data,))
+        flag=cur.fetchone()
+        if not flag:
+            raise ValidationError('there seems to be no matching station.why dont u try a different spelling?')
+    def validate_toloc(self,toloc):
+        cur=mysql.connection.cursor()
+        cur.execute("select * from station where station_name=%s",(toloc.data,))
+        flag=cur.fetchone()
+        if not flag:
+            raise ValidationError('there seems to be no matching station.why dont u try a different spelling?')
+ 
 class PnrStatus(FlaskForm):
     pnr_no=StringField('PNR NO',validators=[DataRequired(),Length(min=10,max=10)],render_kw={"placeholder": "Enter Your 10 digit pnr number"})
     submit=SubmitField('Search')
 
+    def validate_pnr_no(self,pnr_no):
+        cur=mysql.connection.cursor()
+        cur.execute("select * from passenger where pnr=%s",(pnr_no.data,))
+        flag=cur.fetchone()
+        if not flag:
+            raise ValidationError('No such pnr no exist')
 class Trains(FlaskForm):
     train=StringField('Train Name/Number',validators=[DataRequired()],render_kw={"placeholder": "Enter the train name or number"})
     submit=SubmitField('Search')
+    def validate_train(self,train):
+        cur=mysql.connection.cursor()
+        try:
+            tno=int(train.data)
+            flag=cur.execute("select * from train where train_no=%s",(tno,))
+            if not flag:
+                raise ValidationError('No such Train Name or Number exist')
+        except:
+            flag=cur.execute("select * from train where train_name=%s",(train.data,))
+            if not flag:
+                raise ValidationError('No such Train Name or Number exist')
 
 class Station(FlaskForm):
     station=StringField('Station Name/Code',validators=[DataRequired()],render_kw={"placeholder": "Enter the station name or code"})
     submit=SubmitField('Search')
+    def validate_station(self,station):
+        cur=mysql.connection.cursor()
+        try:
+            tno=int(station.data)
+            flag=cur.execute("select * from station where station_no=%s",(tno,))
+            if not flag:
+                raise ValidationError('No such station Name or Number exist')
+        except:
+            flag=cur.execute("select * from station where station_name=%s",(station.data,))
+            if not flag:
+                raise ValidationError('No such station Name or Number exist')
 
 class RegistrationForm(FlaskForm):
     username=StringField('Username',validators=[DataRequired(),

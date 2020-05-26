@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="c-section mt-5">
+        <h6 class="mt-3">
+            <span class="float-left ml-3">Pnr No: {{ form['pnr'] }}</span>
+            <span style="margin-left: 180px;">Train no: {{ form['train_no'] }}</span>
+            <span class="float-right mr-3">Booked by: {{ form['user_name'] }}</span>
+        </h6>
+        <h6 class="mt-3">
+            <span class="float-left ml-3">Train name: {{ form['train_name'] }} </span>
+            <span style="margin-left: 130px;">Travel Date : {{ form['reservation_date'] }}</span>
+            <span class="float-right mr-3">Current Status: {{ form['reservation_status'] }},{{ form['status_no'] }}</span>
+        </h6>
+        <h6 class="mt-3">
+            <span class="float-left ml-5">Boarding Station: {{ form['from_name'] }} ({{ form['source_id'] }})</span>       
+            <span style="margin-left: 150px;">---------</span>
+            <span class="float-right mr-5">To Station: {{ form['to_name'] }} ({{ form['destination_id'] }})</span>
+        </h6>
+        <h6 class="mt-4">
+            <span class="float-left ml-3">Name : {{ form['passenger_name'] }}</span>
+            <span class="ml-5">Age : {{ form['age'] }}</span>
+            <span class="ml-5">Gender : {{ form['gender'] }}</span>
+            <span class="ml-5">Class : {{ form['class_type'] }}</span>
+            <span class="ml-5">Seatno : {{ form['seat_no'] }}</span>
+            <span class="ml-5">Fare : {{ form['fare'] }}</span>
+        </h6>
+        <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Cancel Ticket</button>
+    </div>
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Are you Sure You Want To Cancel Ticket?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Back</button>
+                    <button type="button" onclick="my()" class="btn btn-danger">Cancel It</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" language="javascript">
+        function my()
+        {
+            var form={{ form|tojson }};
+            location.href="http://127.0.0.1:5000/cancelticket/"+ form['pnr'].toString(); 
+        }
+    </script>
+{% endblock content%}

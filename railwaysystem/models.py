@@ -304,17 +304,20 @@ def book_train_fm(passenger_dict,train_dict,book_class,noofpass,fromind,toind):
         information['pnr_no'].append(pnr)
         cur.execute("insert into passenger values(%s,%s,%s,%s,%s)",(pnr,information['seatno'][flag],passenger_dict[name],passenger_dict[age],passenger_dict[gen],))
         mysql.connection.commit()
-        cur.execute("insert into passenger_ticket values(%s,%s,%s,%s,%s)",(pnr,book_class,train_dict['rate'],fro_id,to_id,))
-        mysql.connection.commit()
         date=train_dict['date']
 
         if(book_class[-2:]!='_R'):
+            cur.execute("insert into passenger_ticket values(%s,%s,%s,%s,%s)",(pnr,book_class,train_dict['rate'],fro_id,to_id,))
+            mysql.connection.commit()
             information['status_no'].append(0)
             cur.execute("insert into reservation values(%s,%s,%s,%s,%s,0,%s)",(current_user.email_id,pnr,int(train_dict['no']),information['available_days'],"CNF",date,))
         else:
+            cur.execute("insert into passenger_ticket values(%s,%s,%s,%s,%s)",(pnr,book_class[:-2],train_dict['rate'],fro_id,to_id,))
+            mysql.connection.commit()
             information['status_no'].append(status_no)
             cur.execute("insert into reservation values(%s,%s,%s,%s,%s,%s,%s)",(current_user.email_id,pnr,int(train_dict['no']),information['available_days'],"RAC",status_no,date,))
             status_no+=1
+        
         mysql.connection.commit()
 
         flag+=1
@@ -359,7 +362,7 @@ def book_wl(passenger_dict,train_dict,noofpass,fromind,toind):
     to_id=flag['station_id']
     to=flag['stop_no']
 
-    information['seat_no']=[]
+    information['seatno']=[]
     cur.execute("select available_days,train_name from train_days join train on train_days.train_no=train.train_no where train.train_no=%s",(train_dict['no'],))
     flag=cur.fetchone()
     information['available_days']=flag['available_days']
@@ -375,7 +378,7 @@ def book_wl(passenger_dict,train_dict,noofpass,fromind,toind):
         pnr=generate_pnr()
         information['pnr_no'].append(pnr)
         date=train_dict['date']
-        information['seat_no'].append('NaN')
+        information['seatno'].append('NaN')
 
         cur.execute("insert into passenger(pnr,passenger_name,age,gender) values(%s,%s,%s,%s)",(pnr,passenger_dict[name],passenger_dict[age],passenger_dict[gen],))
         mysql.connection.commit()
@@ -387,3 +390,141 @@ def book_wl(passenger_dict,train_dict,noofpass,fromind,toind):
         status+=1
 
     return information
+
+def return_pnrdetails(pnr):
+    cur=mysql.connection.cursor()
+    cur.execute("""select * from passenger as p join passenger_ticket as pt on p.pnr=pt.pnr join reservation as r on 
+                pt.pnr=r.pnr where p.pnr=%s""",(pnr,))
+    flag = cur.fetchone()
+    cur.execute("select train_name from train where train_no=%s",(flag['train_no'],))
+    flag['train_name']=cur.fetchone()['train_name']
+    flag['from_name']=get_station_name(flag['source_id'])[0]
+    flag['to_name']=get_station_name(flag['destination_id'])[0]
+    cur.execute("select user_name from user where email_id=%s",(flag['email_id'],))
+    flag['user_name']=cur.fetchone()['user_name']
+    return flag
+
+def cancel_ticket(pnr):
+    cur=mysql.connection.cursor()
+    cur.execute("""select r.train_no,r.reservation_date,pt.source_id,pt.destination_id,r.reservation_status,p.seat_no,pt.class_type,r.status_no
+                from passenger as p join passenger_ticket as pt on p.pnr=pt.pnr join reservation as r on pt.pnr=r.pnr where p.pnr=%s""",(pnr,))
+    cancel=cur.fetchone()
+
+    date=cancel['reservation_date']
+    date=date.isoweekday()
+    date=date+1
+    if(date==8):
+        date=1
+    day=return_full_day(convert_no_week(str(date))[0])
+
+    from_stopno,to_stopno=return_stop_no(cancel['train_no'],get_station_name(cancel['source_id'])[0],get_station_name(cancel['destination_id'])[0])
+    
+    if(cancel['class_type']=='1A'):
+        cur.execute("""select r.pnr,r.status_no from passenger as p join passenger_ticket as pt on p.pnr=pt.pnr join reservation as r on
+                        pt.pnr=r.pnr where r.train_no=%s and r.reservation_status='WL' and r.reservation_date=%s and pt.class_type=%s and
+                        pt.source_id=%s and pt.destination_id=%s order by r.status_no asc""",(cancel['train_no'],cancel['reservation_date'],
+                        cancel['class_type'],cancel['source_id'],cancel['destination_id'],))        
+        change=cur.fetchall()
+        if(change):
+            cur.execute("update reservation set status_no=0,reservation_status='CNF' where pnr=%s",(change[0]['pnr'],))
+            mysql.connection.commit()
+            cur.execute("update passenger set seat_no=%s where pnr=%s",(cancel['seat_no'],change[0]['pnr'],))
+            mysql.connection.commit()
+
+            for i in range(1,len(change)):
+                cur.execute("update reservation set status_no=%s where pnr=%s",(change[i]['status_no']-1,change[i]['pnr'],))
+                mysql.connection.commit()
+
+        else:
+            tex.cancel_booking(cancel['train_no'],day,cancel['class_type'],from_stopno,to_stopno,cancel['seat_no'])
+
+    if(cancel['reservation_status']=='WL'):
+        cur.execute("""select r.pnr,r.status_no from passenger as p join passenger_ticket as pt on p.pnr=pt.pnr join reservation as r on
+                        pt.pnr=r.pnr where r.train_no=%s and r.reservation_status='WL' and r.reservation_date=%s and pt.class_type=%s and
+                        pt.source_id=%s and pt.destination_id=%s and r.status_no > %s""",(cancel['train_no'],
+                        cancel['reservation_date'],cancel['class_type'],cancel['source_id'],cancel['destination_id'],cancel['status_no'],))
+        change=cur.fetchall()
+        if(change):
+            for i in change:
+                cur.execute("update reservation set status_no=%s where pnr=%s",(i['status_no']-1,i['pnr'],))
+                mysql.connection.commit()
+
+    elif(cancel['reservation_status']=='RAC'):
+        cur.execute("""select r.pnr,r.status_no from passenger as p join passenger_ticket as pt on p.pnr=pt.pnr join reservation as r on
+                        pt.pnr=r.pnr where r.train_no=%s and r.reservation_status='RAC' and r.reservation_date=%s and pt.class_type=%s and
+                        pt.source_id=%s and pt.destination_id=%s and r.status_no > %s order by r.status_no asc""",(cancel['train_no'],
+                        cancel['reservation_date'],cancel['class_type'],cancel['source_id'],cancel['destination_id'],cancel['status_no'],))
+        change1=cur.fetchall()
+
+        if(change1):
+            for i in change1:
+                cur.execute("update reservation set status_no=%s where pnr=%s",(i['status_no']-1,i['pnr'],))
+                mysql.connection.commit()
+            cur.execute("""select r.pnr,r.status_no from passenger as p join passenger_ticket as pt on p.pnr=pt.pnr join reservation as r on
+                            pt.pnr=r.pnr where r.train_no=%s and r.reservation_status='WL' and r.reservation_date=%s and pt.class_type=%s and
+                            pt.source_id=%s and pt.destination_id=%s order by r.status_no asc""",(cancel['train_no'],cancel['reservation_date'],
+                            cancel['class_type'],cancel['source_id'],cancel['destination_id'],))
+            change2=cur.fetchall()
+            if(change2):
+                #print(change1,change2)
+                cur.execute("update reservation set status_no=%s,reservation_status='RAC' where pnr=%s",(change1[-1]['status_no'],change2[0]['pnr'],))
+                mysql.connection.commit()
+                cur.execute("update passenger set seat_no=%s where pnr=%s",(cancel['seat_no'],change2[0]['pnr'],))
+                mysql.connection.commit()
+                for i in range(1,len(change2)):
+                    cur.execute("update reservation set status_no=%s where pnr=%s",(change2[i]['status_no']-1,change2[i]['pnr'],))
+                    mysql.connection.commit()
+            else:
+                #print(a[2])
+                tex.cancel_booking(cancel['train_no'],day,cancel['class_type']+'_R',from_stopno,to_stopno,cancel['seat_no'])
+        
+        else:
+            tex.cancel_booking(cancel['train_no'],day,cancel['class_type']+'_R',from_stopno,to_stopno,cancel['seat_no'])
+    else:
+        cur.execute("""select r.pnr,r.status_no,p.seat_no from passenger as p join passenger_ticket as pt on p.pnr=pt.pnr join reservation as r on
+                        pt.pnr=r.pnr where r.train_no=%s and r.reservation_status='RAC' and r.reservation_date=%s and pt.class_type=%s and
+                        pt.source_id=%s and pt.destination_id=%s order by r.status_no asc""",(cancel['train_no'],
+                        cancel['reservation_date'],cancel['class_type'],cancel['source_id'],cancel['destination_id'],))
+        change1=cur.fetchall()
+
+        if(change1):
+            cur.execute("update reservation set status_no=0,reservation_status='CNF' where pnr=%s",(change1[0]['pnr'],))
+            mysql.connection.commit()
+            cur.execute("update passenger set seat_no=%s where pnr=%s",(cancel['seat_no'],change1[0]['pnr'],))
+            mysql.connection.commit()
+
+            for i in range(1,len(change1)):
+                cur.execute("update reservation set status_no=%s where pnr=%s",(change1[i]['status_no']-1,change1[i]['pnr'],))
+                mysql.connection.commit()
+
+            cur.execute("""select r.pnr,r.status_no from passenger as p join passenger_ticket as pt on p.pnr=pt.pnr join reservation as r on
+                            pt.pnr=r.pnr where r.train_no=%s and r.reservation_status='WL' and r.reservation_date=%s and pt.class_type=%s and
+                            pt.source_id=%s and pt.destination_id=%s order by r.status_no asc""",(cancel['train_no'],cancel['reservation_date'],
+                            cancel['class_type'],cancel['source_id'],cancel['destination_id'],))
+            change2=cur.fetchall()
+            if(change2):
+                cur.execute("update reservation set status_no=%s,reservation_status='RAC' where pnr=%s",(change1[-1]['status_no'],change2[0]['pnr'],))
+                mysql.connection.commit()
+                cur.execute("update passenger set seat_no=%s where pnr=%s",(change1[0]['seat_no'],change2[0]['pnr'],))
+                mysql.connection.commit()
+                for i in range(1,len(change2)):
+                    cur.execute("update reservation set status_no=%s where pnr=%s",(change2[i]['status_no']-1,change2[i]['pnr'],))
+                    mysql.connection.commit()
+            else:
+                tex.cancel_booking(cancel['train_no'],day,cancel['class_type']+'_R',from_stopno,to_stopno,change1[0]['seat_no'])
+        else:
+            tex.cancel_booking(cancel['train_no'],day,cancel['class_type'],from_stopno,to_stopno,cancel['seat_no'])
+
+    cur.execute("delete reservation,passenger_ticket from reservation join passenger_ticket on reservation.pnr=passenger_ticket.pnr where reservation.pnr=%s",(pnr,))
+    mysql.connection.commit()
+    cur.execute("delete from passenger where pnr=%s",(pnr,))
+    mysql.connection.commit()
+
+def mybooking_user(email_id):
+    cur=mysql.connection.cursor()
+    cur.execute("""select * from passenger as p join passenger_ticket as pt on p.pnr=pt.pnr join reservation as r on pt.pnr=r.pnr where r.email_id=%s""",(email_id,))
+    flag=cur.fetchall()
+    for i in flag:
+        i['source_id']=get_station_name(i['source_id'])[0]
+        i['destination_id']=get_station_name(i['destination_id'])[0]
+    return flag
